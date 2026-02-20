@@ -12,6 +12,24 @@ from typing import Annotated, Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 
 
+class BooleanStringEnum(Enum):
+    """Base class for enums with 'true'/'false' string members.
+
+    Automatically coerces Python booleans to their string equivalents
+    so Pydantic validation succeeds regardless of whether the API returns
+    a JSON boolean (true/false) or a JSON string ("true"/"false").
+    """
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, bool):
+            return cls('true') if value else cls('false')
+        if isinstance(value, str):
+            lower = value.strip().lower()
+            if lower in ('true', 'false'):
+                return cls(lower)
+        return None
+
+
 class Language(Enum):
     C_ = 'C#'
     Py = 'Py'
@@ -1703,17 +1721,17 @@ class LiveAuthenticationData(BaseModel):
     pass
 
 
-class NotifyInsights(Enum):
+class NotifyInsights(BooleanStringEnum):
     true = 'true'
     false = 'false'
 
 
-class NotifyOrderEvents(Enum):
+class NotifyOrderEvents(BooleanStringEnum):
     true = 'true'
     false = 'false'
 
 
-class AutoRestart(Enum):
+class AutoRestart(BooleanStringEnum):
     true = 'true'
     false = 'false'
 
